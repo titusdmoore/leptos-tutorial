@@ -54,6 +54,11 @@ fn App() -> impl IntoView {
         }
     };
 
+    let (numeric, set_numeric) = create_signal(Ok(0));
+    let on_numeric_input = move |ev| {
+        set_numeric(event_target_value(&ev).parse::<u32>());
+    };
+
     view! {
             <ProgressBar progress=count />
             <ProgressBar progress=Signal::derive(progress) />
@@ -107,6 +112,24 @@ fn App() -> impl IntoView {
         }>
         "Toggle conditional display"
         </button>
+        <div>
+            <input type="text" on:input=on_numeric_input placeholder="Numeric" />
+            <p>"This is just raw numeric value: "{numeric}</p>
+            <ErrorBoundary
+                fallback=|errors| view! {
+                    <div>
+                        <p>"Something went wrong!"</p>
+                        <ul>
+                            {move || errors.get()
+                                        .into_iter()
+                                        .map(|(_, e)| view! { <li>{e.to_string()}</li> })
+                                        .collect_view()}
+                        </ul>
+                    </div>
+                }>
+                <p>"This is numeric value with error boundary: "{numeric}</p>
+            </ErrorBoundary>
+        </div>
     }
 }
 
