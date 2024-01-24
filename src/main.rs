@@ -1,6 +1,41 @@
 use leptos::{html::Input, *};
 use web_sys::{Event, SubmitEvent};
 
+#[component]
+fn ChildButton(change_parent_value: WriteSignal<u32>) -> impl IntoView {
+    let on_click = move |_| {
+        change_parent_value.update(move |x| *x += 1);
+    };
+
+    view! {
+        <button on:click=on_click>
+            "Increment parent value"
+        </button>
+    }
+}
+
+#[component]
+fn TestingParentElement<F, IV>(render_prop: F, children: Children) -> impl IntoView
+where
+    F: Fn() -> IV,
+    IV: IntoView,
+{
+    let children = children()
+        .nodes
+        .into_iter()
+        .map(|child| view! { <li>{child}</li> })
+        .collect_view();
+
+    view! {
+        <div>
+            {render_prop()}
+            <ul>
+                {children}
+            </ul>
+        </div>
+    }
+}
+
 /// Displays a progress bar towards a complete value.
 #[component]
 fn ProgressBar(
@@ -58,6 +93,8 @@ fn App() -> impl IntoView {
     let on_numeric_input = move |ev| {
         set_numeric(event_target_value(&ev).parse::<u32>());
     };
+
+    let (parent_value, set_parent_value) = create_signal(10);
 
     view! {
             <ProgressBar progress=count />
@@ -130,6 +167,16 @@ fn App() -> impl IntoView {
                 <p>"This is numeric value with error boundary: "{numeric}</p>
             </ErrorBoundary>
         </div>
+        <div>
+            "This is the parent value: "{parent_value}
+            <ChildButton change_parent_value=set_parent_value />
+        </div>
+        <TestingParentElement render_prop={|| view! { <p>"This is from the render prop"</p> }}>
+            <p>"This is a child 1"</p>
+            <p>"This is a child 2"</p>
+            <p>"This is a child 3"</p>
+            <p>"This is a child 4"</p>
+        </TestingParentElement>
     }
 }
 
