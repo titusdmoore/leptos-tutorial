@@ -1,5 +1,69 @@
 use leptos::{html::Input, *};
-use web_sys::{Event, SubmitEvent};
+use leptos_router::*;
+use web_sys::SubmitEvent;
+
+#[component]
+fn App() -> impl IntoView {
+    view! {
+        <Router>
+            <nav>
+                <ul>
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    <li>
+                        <a href="/raw-tutorial">Tutorial</a>
+                    </li>
+                    <li>
+                        <a href="/users">Users</a>
+                    </li>
+                    <li>
+                        <a href="/users/titusmoore">Titus</a>
+                    </li>
+                </ul>
+            </nav>
+            <Routes>
+                <Route path="/" view=Home />
+                <Route path="/raw-tutorial" view=TutorialComponent />
+                <Route path="/users" view=Users>
+                    <Route path=":id" view=SingleUser />
+                    <Route path="" view=|| view! {
+                        <p>"Hello From Users"</p>
+                    }/>
+                </Route>
+            </Routes>
+        </Router>
+    }
+}
+
+#[component]
+fn Users() -> impl IntoView {
+    view! {
+        <div>
+            <h1>"This is the users component"</h1>
+            <Outlet />
+        </div>
+    }
+}
+
+#[component]
+fn SingleUser() -> impl IntoView {
+    let params = use_params_map();
+    let id = move || params.with(|params| params.get("id").cloned().unwrap_or_default());
+
+    let name = move || match id().as_str() {
+        "titusmoore" => "Titus",
+        "bob" => "Bob",
+        "steve" => "Steve",
+        _ => "User not found.",
+    };
+
+    view! {
+        <div>
+            <h1>"This is the users id component " {name}</h1>
+        </div>
+    }
+}
 
 #[component]
 fn ChildButton(change_parent_value: WriteSignal<u32>) -> impl IntoView {
@@ -52,7 +116,7 @@ fn ProgressBar(
 }
 
 #[component]
-fn App() -> impl IntoView {
+fn TutorialComponent() -> impl IntoView {
     let (count, set_count) = create_signal(0);
     let progress = move || count() * 2;
     let my_values = vec!["Foo", "Bar", "Baz"];
@@ -177,6 +241,15 @@ fn App() -> impl IntoView {
             <p>"This is a child 3"</p>
             <p>"This is a child 4"</p>
         </TestingParentElement>
+    }
+}
+
+#[component]
+fn Home() -> impl IntoView {
+    view! {
+        <div>
+            <h1>"Home"</h1>
+        </div>
     }
 }
 
